@@ -1,0 +1,12 @@
+{
+    name: "Curve",
+    types: ["ts_list", "ts_bucket"],
+    classRef: D3Curve,
+    keyMap: {
+        "drag": "Zoom on an area (may be vertical or horizontal)",
+        "shift + drag": "Pan",
+        "double click": "Reset zoom",
+        "click on legend": "Toggle on/off a curve display"
+    },
+    desc: "Plot one or several time series"
+}
