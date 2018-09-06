@@ -1506,11 +1506,11 @@ class D3Curve extends VizTool {
                     async: true,
                     op_id: cut_ts_op_id,
                     args: {
-                        sd: sd,
-                        ed: ed,
-                        nb_points: null,
-                        fid: fid,
-                        tsuid: tsuid
+                        cut_ts__p__sd: sd,
+                        cut_ts__p__ed: ed,
+                        cut_ts__p__nb_points: null,
+                        cut_ts__p__fid: fid,
+                        cut_ts__i__tsuid: tsuid
                     },
                     success: function (request) {
                         const timer = setInterval(function () {
@@ -1560,4 +1560,3 @@ class D3Curve extends VizTool {
 
     }
 }
-
