@@ -1499,12 +1499,9 @@ class D3Curve extends VizTool {
         ikats.api.op.list({
             async: true,
             success: function (op_list) {
-                const cut_ts_op_id = $.grep(op_list.data, function (op) {
-                    return op.name === "cut_ts";
-                })[0].id;
                 ikats.api.op.run({
                     async: true,
-                    op_id: cut_ts_op_id,
+                    name: "cut_ts",
                     args: {
                         cut_ts__p__sd: sd,
                         cut_ts__p__ed: ed,
