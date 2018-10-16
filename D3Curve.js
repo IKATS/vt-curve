@@ -1499,18 +1499,15 @@ class D3Curve extends VizTool {
         ikats.api.op.list({
             async: true,
             success: function (op_list) {
-                const cut_ts_op_id = $.grep(op_list.data, function (op) {
-                    return op.name === "cut_ts";
-                })[0].id;
                 ikats.api.op.run({
                     async: true,
-                    op_id: cut_ts_op_id,
+                    name: "cut_ts",
                     args: {
-                        sd: sd,
-                        ed: ed,
-                        nb_points: null,
-                        fid: fid,
-                        tsuid: tsuid
+                        cut_ts__p__sd: sd,
+                        cut_ts__p__ed: ed,
+                        cut_ts__p__nb_points: null,
+                        cut_ts__p__fid: fid,
+                        cut_ts__i__tsuid: tsuid
                     },
                     success: function (request) {
                         const timer = setInterval(function () {
@@ -1560,4 +1557,3 @@ class D3Curve extends VizTool {
 
     }
 }
-
