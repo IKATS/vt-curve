@@ -217,6 +217,8 @@ class D3Curve extends VizTool {
      */
     render() {
         const self = this;
+        console.log("self:");
+        console.log(self);
         // Cleans content (end of loading)
         d3.select("#" + self.container).selectAll("*")
             .remove();
@@ -229,6 +231,15 @@ class D3Curve extends VizTool {
                 .text("Save visible area as a new TS")
                 .on("click", function () {
                     self.buildModal();
+                });
+        }else {
+            // Add a button to cut the TS
+            d3.select("#" + this.container)
+                .append("button")
+                .attr("class", "btn btn-default")
+                .text("Save visible area as a new Dataset")
+                .on("click", function () {
+                    self.buildDsModal();
                 });
         }
 
@@ -1462,6 +1473,63 @@ class D3Curve extends VizTool {
                             <div class='row' style='padding-top:10px'>
                                 <div class='col-xs-12'>
                                     <a id='${self.container}_confirm_save_cut' class='btn btn-default' style='float:right'>Save as a new TS</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `);
+        $("#" + self.container + "_confirm_save_cut")
+            .on("click", function () {
+                self.operateCut();
+            });
+        $("#" + self.container + "_algoConfirmCut").modal("show");
+    }
+
+    /**
+     * Build confirmation modal with JQuery for Datasets
+     */
+    buildDsModal() {
+        const self = this;
+        $("#" + self.container + "_algoConfirmCut").remove();
+        $("#body").append(
+            `<div class='modal fade' id='${self.container}_algoConfirmCut' tabindex='-1' role='dialog' aria-labelledby='wfLoadModalTitle'>
+                <div class='modal-dialog' role='document'>
+                    <div class='modal-content'>
+                        <div class='modal-header'>
+                            <button type='button' class='close' data-dismiss='modal' aria-label='Close'>
+                                <span aria-hidden='true'>&times;</span>
+                            </button>
+                            <h4 class='modal-title' id='wfLoadModalTitle'>Assisted Dataset creation</h4>
+                        </div>
+                        <div class='modal-body'>
+                            <div class='row'>
+                                <div class='col-xs-12'>
+                                    <label> Confirm creation of a new Dataset with : </label>
+                                </div>
+                            </div>
+                            <div class='row' style='padding-top:10px'>
+                                <div class='col-xs-3' style='top:5px;'>
+                                    <label>Name :</label>
+                                </div>
+                                <div class='col-xs-4'>
+                                    <input type='text' id='${self.container}_start_input_cut' class='form-control' placeholder='...'
+                                           value='my_new_dataset' style='width:220px'> </input>
+                                </div>
+                            </div>
+                            <div class='row' style='padding-top:10px'>
+                                <div class='col-xs-3' style='top:5px;'>
+                                   <label>Description :</label>
+                                </div>
+                                <div class='col-xs-4'>
+                                    <input type='text' id='${self.container}_end_input_cut' class='form-control' placeholder='...'
+                                     style='width:220px'> </input>
+                                </div>
+                            </div>
+                            <div class='row' style='padding-top:10px'>
+                                <div class='col-xs-12'>
+                                    <a id='${self.container}_confirm_save_cut' class='btn btn-default' style='float:right'>Save as a new DS</a>
                                 </div>
                             </div>
                         </div>
