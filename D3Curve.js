@@ -237,7 +237,7 @@ class D3Curve extends VizTool {
             d3.select("#" + this.container)
                 .append("button")
                 .attr("class", "btn btn-default")
-                .text("Save area as a new Dataset")
+                .text("Save visible area as a new Dataset")
                 .on("click", function () {
                     self.buildDsModal();
                 });
