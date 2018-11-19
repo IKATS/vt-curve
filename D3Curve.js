@@ -237,7 +237,7 @@ class D3Curve extends VizTool {
             d3.select("#" + this.container)
                 .append("button")
                 .attr("class", "btn btn-default")
-                .text("Save visible area as a new Dataset")
+                .text("Save area as a new Dataset")
                 .on("click", function () {
                     self.buildDsModal();
                 });
@@ -1494,7 +1494,7 @@ class D3Curve extends VizTool {
         const self = this;
         $("#" + self.container + "_algoConfirmCut").remove();
         $("#body").append(
-            `<div class='modal fade' id='${self.container}_algoConfirmCut' tabindex='-1' role='dialog' aria-labelledby='wfLoadModalTitle'>
+            `<div class='modal fade' id='${self.container}_algoConfirmSaveDs' tabindex='-1' role='dialog' aria-labelledby='wfLoadModalTitle'>
                 <div class='modal-dialog' role='document'>
                     <div class='modal-content'>
                         <div class='modal-header'>
@@ -1510,26 +1510,27 @@ class D3Curve extends VizTool {
                                 </div>
                             </div>
                             <div class='row' style='padding-top:10px'>
+                                <div class='col-xs-1'></div>
                                 <div class='col-xs-3' style='top:5px;'>
                                     <label>Name :</label>
                                 </div>
-                                <div class='col-xs-4'>
-                                    <input type='text' id='${self.container}_start_input_cut' class='form-control' placeholder='...'
-                                           value='my_new_dataset' style='width:220px'> </input>
+                                <div class='col-xs-8'>
+                                    <input type='text' id='${self.container}_dataset_name' class='form-control' placeholder='...'
+                                           value='my_new_dataset'> </input>
                                 </div>
                             </div>
                             <div class='row' style='padding-top:10px'>
+                                <div class='col-xs-1'></div>
                                 <div class='col-xs-3' style='top:5px;'>
                                    <label>Description :</label>
                                 </div>
-                                <div class='col-xs-4'>
-                                    <input type='text' id='${self.container}_end_input_cut' class='form-control' placeholder='...'
-                                     style='width:220px'> </input>
+                                <div class='col-xs-8'>
+                                    <input type='text' id='${self.container}_description' class='form-control' placeholder='...'> </input>
                                 </div>
                             </div>
                             <div class='row' style='padding-top:10px'>
                                 <div class='col-xs-12'>
-                                    <a id='${self.container}_confirm_save_cut' class='btn btn-default' style='float:right'>Save as a new DS</a>
+                                    <a id='${self.container}_confirm_save_ds' class='btn btn-default' style='float:right'>Save as a new DS</a>
                                 </div>
                             </div>
                         </div>
@@ -1537,11 +1538,46 @@ class D3Curve extends VizTool {
                 </div>
             </div>
         `);
-        $("#" + self.container + "_confirm_save_cut")
+        $("#" + self.container + "_confirm_save_ds")
             .on("click", function () {
-                self.operateCut();
+                self.sendDsToApi();
             });
         $("#" + self.container + "_algoConfirmCut").modal("show");
+    }
+
+    sendDsToApi(){
+        const self = this;
+        // const name = $(self.container + "_dataset_name").val();
+        // const desc = $(self.container + "_description").val();
+        // const tslist = self.data;
+
+        //debug
+        console.log("senddstoapi self : ");
+        console.log(self);
+        console.log(name);
+        console.log(desc);
+
+        // Calling the API to create the Dataset :
+        ikats.api.op.list({
+            async: true,
+            p_args: {
+                name: $(self.container + "_dataset_name").val(),
+                desc: $(self.container + "_description").val(),
+                ts_list: self.data
+
+            },
+            success: function (results){
+                console.log(results);
+                notify().success("Dataset "+name+" saved ", "Success");
+            },
+            error: function () {
+                notify().error("Could not save the Dataset ", "Error :");
+            },
+            complete: function () {
+                $("#" + self.container + "_algoConfirmSaveDs").modal("hide");
+            }
+        });
+
     }
 
     /**
