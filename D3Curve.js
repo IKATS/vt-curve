@@ -1492,7 +1492,7 @@ class D3Curve extends VizTool {
      */
     buildDsModal() {
         const self = this;
-        $("#" + self.container + "_algoConfirmCut").remove();
+        $("#" + self.container + "_algoConfirmSaveDS").remove();
         $("#body").append(
             `<div class='modal fade' id='${self.container}_algoConfirmSaveDs' tabindex='-1' role='dialog' aria-labelledby='wfLoadModalTitle'>
                 <div class='modal-dialog' role='document'>
@@ -1540,32 +1540,45 @@ class D3Curve extends VizTool {
         `);
         $("#" + self.container + "_confirm_save_ds")
             .on("click", function () {
+
+                const self = this;
+                const name = $(self.container + "_dataset_name").val();
+                const desc = $(self.container + "_description").val();
+                const tslist = self.data;
+
+                //debug
+                console.log("senddstoapi self : ");
+                console.log(tslist);
+                console.log(name);
+                console.log(desc);
+
+
                 self.sendDsToApi();
             });
-        $("#" + self.container + "_algoConfirmCut").modal("show");
+        $("#" + self.container + "_algoConfirmSaveDS").modal("show");
     }
 
     sendDsToApi(){
-        const self = this;
+        // const self = this;
         // const name = $(self.container + "_dataset_name").val();
         // const desc = $(self.container + "_description").val();
         // const tslist = self.data;
-
+        //
         //debug
-        console.log("senddstoapi self : ");
-        console.log(self);
-        console.log(name);
-        console.log(desc);
+        // console.log("senddstoapi self : ");
+        // console.log(tslist);
+        // console.log(name);
+        // console.log(desc);
+
+
+
 
         // Calling the API to create the Dataset :
-        ikats.api.op.list({
+        ikats.api.ds.create({
             async: true,
-            p_args: {
-                name: $(self.container + "_dataset_name").val(),
-                desc: $(self.container + "_description").val(),
-                ts_list: self.data
-
-            },
+            name: $(self.container + "_dataset_name").val(),
+            desc: $(self.container + "_description").val(),
+            ts_list: self.data,
             success: function (results){
                 console.log(results);
                 notify().success("Dataset "+name+" saved ", "Success");
@@ -1574,7 +1587,7 @@ class D3Curve extends VizTool {
                 notify().error("Could not save the Dataset ", "Error :");
             },
             complete: function () {
-                $("#" + self.container + "_algoConfirmSaveDs").modal("hide");
+                $("#" + self.container + "_algoConfirmSaveDS").modal("hide");
             }
         });
 
