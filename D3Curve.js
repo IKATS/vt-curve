@@ -1525,7 +1525,8 @@ class D3Curve extends VizTool {
                                    <label>Description :</label>
                                 </div>
                                 <div class='col-xs-8'>
-                                    <input type='text' id='${self.container}_description' class='form-control' placeholder='...'> </input>
+                                    <input type='text' id='${self.container}_description' class='form-control' placeholder='...'
+                                    value='Desc'> </input>
                                 </div>
                             </div>
                             <div class='row' style='padding-top:10px'>
@@ -1540,35 +1541,23 @@ class D3Curve extends VizTool {
         `);
         $("#" + self.container + "_confirm_save_ds")
             .on("click", function () {
-
-                const self = this;
-                const name = $(self.container + "_dataset_name").val();
-                const desc = $(self.container + "_description").val();
-                const tslist = self.data;
-
-                //debug
-                console.log("senddstoapi self : ");
-                console.log(tslist);
-                console.log(name);
-                console.log(desc);
-
-
                 self.sendDsToApi();
             });
         $("#" + self.container + "_algoConfirmSaveDS").modal("show");
     }
 
     sendDsToApi(){
-        // const self = this;
-        // const name = $(self.container + "_dataset_name").val();
-        // const desc = $(self.container + "_description").val();
-        // const tslist = self.data;
-        //
+        const self = this;
+        const name = $("#"+self.container + "_dataset_name").val();
+        const desc = $("#"+self.container + "_description").val();
+        let tslist = self.data;
+        tslist = tslist.filter(function(ts,i){ return self.d3.visibleCurves[i];}).map(item => item.tsuid);
+
         //debug
-        // console.log("senddstoapi self : ");
-        // console.log(tslist);
-        // console.log(name);
-        // console.log(desc);
+        console.log("senddstoapi self : ");
+        console.log(name);
+        console.log(desc);
+        console.log(tslist);
 
 
 
@@ -1576,15 +1565,17 @@ class D3Curve extends VizTool {
         // Calling the API to create the Dataset :
         ikats.api.ds.create({
             async: true,
-            name: $(self.container + "_dataset_name").val(),
-            desc: $(self.container + "_description").val(),
-            ts_list: self.data,
+            name: name,
+            desc: desc,
+            ts_list: tslist,
             success: function (results){
                 console.log(results);
-                notify().success("Dataset "+name+" saved ", "Success");
+                // notify().success("Dataset "+name+" saved ", "Success");
+                notify().success(results.data, "Success");
             },
-            error: function () {
-                notify().error("Could not save the Dataset ", "Error :");
+            error: function (results) {
+                // notify().error("Could not save the Dataset ", "Error :");
+                notify().error(results.data, "Error :");
             },
             complete: function () {
                 $("#" + self.container + "_algoConfirmSaveDS").modal("hide");
