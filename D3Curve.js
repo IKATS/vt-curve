@@ -217,8 +217,6 @@ class D3Curve extends VizTool {
      */
     render() {
         const self = this;
-        console.log("self:");
-        console.log(self);
         // Cleans content (end of loading)
         d3.select("#" + self.container).selectAll("*")
             .remove();
@@ -233,7 +231,7 @@ class D3Curve extends VizTool {
                     self.buildModal();
                 });
         }else {
-            // Add a button to cut the TS
+            // Add a button to save the dataset
             d3.select("#" + this.container)
                 .append("button")
                 .attr("class", "btn btn-default")
@@ -1492,7 +1490,7 @@ class D3Curve extends VizTool {
      */
     buildDsModal() {
         const self = this;
-        $("#" + self.container + "_algoConfirmSaveDS").remove();
+        $("#" + self.container + "_algoConfirmSaveDs").remove();
         $("#body").append(
             `<div class='modal fade' id='${self.container}_algoConfirmSaveDs' tabindex='-1' role='dialog' aria-labelledby='wfLoadModalTitle'>
                 <div class='modal-dialog' role='document'>
@@ -1543,7 +1541,7 @@ class D3Curve extends VizTool {
             .on("click", function () {
                 self.sendDsToApi();
             });
-        $("#" + self.container + "_algoConfirmSaveDS").modal("show");
+        $("#" + self.container + "_algoConfirmSaveDs").modal("show");
     }
 
     sendDsToApi(){
@@ -1553,15 +1551,6 @@ class D3Curve extends VizTool {
         let tslist = self.data;
         tslist = tslist.filter(function(ts,i){ return self.d3.visibleCurves[i];}).map(item => item.tsuid);
 
-        //debug
-        console.log("senddstoapi self : ");
-        console.log(name);
-        console.log(desc);
-        console.log(tslist);
-
-
-
-
         // Calling the API to create the Dataset :
         ikats.api.ds.create({
             async: true,
@@ -1569,7 +1558,6 @@ class D3Curve extends VizTool {
             desc: desc,
             ts_list: tslist,
             success: function (results){
-                console.log(results);
                 // notify().success("Dataset "+name+" saved ", "Success");
                 notify().success(results.data, "Success");
             },
@@ -1581,7 +1569,6 @@ class D3Curve extends VizTool {
                 $("#" + self.container + "_algoConfirmSaveDS").modal("hide");
             }
         });
-
     }
 
     /**
