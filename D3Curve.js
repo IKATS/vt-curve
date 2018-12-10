@@ -1435,7 +1435,7 @@ class D3Curve extends VizTool {
                         <div class='modal-body'>
                             <div class='row'>
                                 <div class='col-xs-12'>
-                                    <label> Confirm creation of a new time series with : </label>
+                                    <label>Confirm creation of a new timeseries with: </label>
                                 </div>
                             </div>
                             <div class='row' style='padding-top:10px'>
@@ -1486,11 +1486,18 @@ class D3Curve extends VizTool {
     }
 
     /**
-     * Build confirmation modal with JQuery for Datasets
+     * Build confirmation modal for Dataset creation
      */
     buildDsModal() {
         const self = this;
         $("#" + self.container + "_algoConfirmSaveDs").remove();
+        //Review#707: "wfLoadModalTitle" bad id name (2x)
+        //Review#707: no space before ":"
+        //Review#707: The modal doesn't hide after save
+        //Review#707: Bad button title "save *area*"
+        //Review#707: You shall not propose save new DS when no TS is selected
+        //Review#707: You shall handle DS with no name correctly (don't try to create DS with name "")
+        //Review#707: Before submitting for review, check commented code (remove)
         $("#body").append(
             `<div class='modal fade' id='${self.container}_algoConfirmSaveDs' tabindex='-1' role='dialog' aria-labelledby='wfLoadModalTitle'>
                 <div class='modal-dialog' role='document'>
@@ -1504,13 +1511,13 @@ class D3Curve extends VizTool {
                         <div class='modal-body'>
                             <div class='row'>
                                 <div class='col-xs-12'>
-                                    <label> Confirm creation of a new Dataset with : </label>
+                                    <label>Confirm creation of a new Dataset with:</label>
                                 </div>
                             </div>
                             <div class='row' style='padding-top:10px'>
                                 <div class='col-xs-1'></div>
                                 <div class='col-xs-3' style='top:5px;'>
-                                    <label>Name :</label>
+                                    <label>Name</label>
                                 </div>
                                 <div class='col-xs-8'>
                                     <input type='text' id='${self.container}_dataset_name' class='form-control' placeholder='...'
@@ -1520,7 +1527,7 @@ class D3Curve extends VizTool {
                             <div class='row' style='padding-top:10px'>
                                 <div class='col-xs-1'></div>
                                 <div class='col-xs-3' style='top:5px;'>
-                                   <label>Description :</label>
+                                   <label>Description</label>
                                 </div>
                                 <div class='col-xs-8'>
                                     <input type='text' id='${self.container}_description' class='form-control' placeholder='...'
@@ -1548,22 +1555,19 @@ class D3Curve extends VizTool {
         const self = this;
         const name = $("#"+self.container + "_dataset_name").val();
         const desc = $("#"+self.container + "_description").val();
-        let tslist = self.data;
-        tslist = tslist.filter(function(ts,i){ return self.d3.visibleCurves[i];}).map(item => item.tsuid);
+        let tslist = self.data.filter(function(ts,i){ return self.d3.visibleCurves[i];}).map(item => item.tsuid);
 
-        // Calling the API to create the Dataset :
+        // Calling the API to create the Dataset
         ikats.api.ds.create({
             async: true,
             name: name,
             desc: desc,
             ts_list: tslist,
             success: function (results){
-                // notify().success("Dataset "+name+" saved ", "Success");
                 notify().success(results.data, "Success");
             },
             error: function (results) {
-                // notify().error("Could not save the Dataset ", "Error :");
-                notify().error(results.data, "Error :");
+                notify().error(results.data, "Error");
             },
             complete: function () {
                 $("#" + self.container + "_algoConfirmSaveDS").modal("hide");
