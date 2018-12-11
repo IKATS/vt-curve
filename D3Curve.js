@@ -230,7 +230,9 @@ class D3Curve extends VizTool {
                 .on("click", function () {
                     self.buildModal();
                 });
-        }else {
+        } 
+        else {
+            // Review#707 It should also be possible to save the dataset if there is only 1 TS visible
             // Add a button to save the dataset
             d3.select("#" + this.container)
                 .append("button")
@@ -1489,6 +1491,7 @@ class D3Curve extends VizTool {
      * Build confirmation modal for Dataset creation
      */
     buildDsModal() {
+        //Review#707: Bad button title "save *area*"
         const self = this;
         $("#" + self.container + "_algoConfirmSaveDs").remove();
         $("#body").append(
@@ -1504,7 +1507,8 @@ class D3Curve extends VizTool {
                         <div class='modal-body' id="modalDsBody">
                             <div class='row'>
                                 <div class='col-xs-12'>
-                                    <label>Confirm creation of a new Dataset with :</label>
+                                    <!-- Review#707 Don't redo mistakes I already fixed, read my former commits -->
+                                    <label>Confirm creation of a new Dataset with:</label>
                                 </div>
                             </div>
                             <div class='row' style='padding-top:10px'>
@@ -1533,6 +1537,7 @@ class D3Curve extends VizTool {
             </div>
         `);
 
+        //Review#707 Should be "const", not "let"
         let tslist = self.data.filter(function(ts,i){ return self.d3.visibleCurves[i];}).map(item => item.tsuid);
 
         // no TS selected
@@ -1545,6 +1550,8 @@ class D3Curve extends VizTool {
                 </div>
             `);
         } else {
+            // Review#707 Bad UX, try to avoid showing the popup if no action can be performed
+            // Review#707 Moreover, you should capitalize buttons labels, messages, descriptions, log, ... everywhere
             $("#modalDsBody").append(`
                 <div class='row' style='padding-top:10px'>
                     <div class='col-xs-12'>
@@ -1570,11 +1577,14 @@ class D3Curve extends VizTool {
 
         // null or empty field check
         if (name == "" || name == null) {
-            notify().error("the name field can  not be empty", "Error");
+            // Review#707 Capitalize and reword with a positive intention
+            notify().error("A dataset name shall be provided", "Error");
+            // Review#707 Bad UX, user shall not reopen modal this error
             $("#" + self.container + "_algoConfirmSaveDs").modal("hide");
             return;
         }
         if (tslist.length === 0) {
+            // Review#707 Capitalize
             notify().error("you need at least one time-serie to create a dataset", "Error");
             $("#" + self.container + "_algoConfirmSaveDs").modal("hide");
             return;
@@ -1588,13 +1598,18 @@ class D3Curve extends VizTool {
             ts_list: tslist,
             success: function (results){
                 notify().success(results.data, "Success");
+                // Review#707 Why handling modal close action here ? "complete" does the same, fix here because complete is also called if "error" is triggered
                 $("#" + self.container + "_algoConfirmSaveDs").modal("hide");
             },
             error: function (results) {
-                //conflict case
-                if (results.debug.status == 409) {
+                // Review#707 Capitalize the comments (and add a space after "//")
+                // Conflict case
+                // Review#707 "debug" should be restricted to debug purposes, prefer xhr, fix all occurrences
+                if (results.xhr.status == 409) {
+                    // Review#707 Capitalize
                     notify().error("there already is a dataset called "+name+" in the database. please choose another name", "Error");
                 }else {
+                    // Review#707 "debug"
                     notify().error(results.debug.responseText, "Error");
                 }
             },
