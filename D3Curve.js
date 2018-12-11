@@ -1470,7 +1470,7 @@ class D3Curve extends VizTool {
                             </div>
                             <div class='row' style='padding-top:10px'>
                                 <div class='col-xs-12'>
-                                    <a id='${self.container}_confirm_save_cut' class='btn btn-default' style='float:right'>Save as a new TS</a>
+                                    <button id='${self.container}_confirm_save_cut' class='btn btn-default' style='float:right'>Save as a new TS</button>
                                 </div>
                             </div>
                         </div>
@@ -1495,20 +1495,21 @@ class D3Curve extends VizTool {
         //Review#707: no space before ":" - ok
         //Review#707: The modal doesn't hide after save - ~ok ?
         //Review#707: Bad button title "save *area*" - ok
-        //Review#707: You shall not propose save new DS when no TS is selected
+        //Review#707: You shall not propose save new DS when no TS is selected - ok
+        //Review#707: You shall handle DS with no name correctly (don't try to create DS with name "") - ~ok
         //Review#707: You shall handle DS with no name correctly (don't try to create DS with name "") - ~ok
         //Review#707: Before submitting for review, check commented code (remove) - ok
         $("#body").append(
             `<div class='modal fade' id='${self.container}_algoConfirmSaveDs' tabindex='-1' role='dialog' aria-labelledby='Dataset_creator'>
                 <div class='modal-dialog' role='document'>
                     <div class='modal-content'>
-                        <div class='modal-header' id="modalDsBody">
+                        <div class='modal-header'>
                             <button type='button' class='close' data-dismiss='modal' aria-label='Close'>
                                 <span aria-hidden='true'>&times;</span>
                             </button>
                             <h4 class='modal-title' id='Dataset_creator'>Assisted Dataset creation</h4>
                         </div>
-                        <div class='modal-body'>
+                        <div class='modal-body' id="modalDsBody">
                             <div class='row'>
                                 <div class='col-xs-12'>
                                     <label>Confirm creation of a new Dataset with :</label>
@@ -1540,27 +1541,40 @@ class D3Curve extends VizTool {
             </div>
         `);
 
-        if (self.d3.visibleCurves >1 ) {
+        let tslist = self.data.filter(function(ts,i){ return self.d3.visibleCurves[i];}).map(item => item.tsuid);
+
+        // no TS selected
+        if (tslist.length > 0) {
             $("#modalDsBody").append(`
                 <div class='row' style='padding-top:10px'>
                     <div class='col-xs-12'>
-                        <a id='${self.container}_confirm_save_ds' class='btn btn-default' style='float:right'>Save as a new DS</a>
+                        <button id='${self.container}_confirm_save_ds' class='btn btn-default' style='float:right'>Save as a new DS</button>
+                    </div>
+                </div>
+            `);
+        } else {
+            $("#modalDsBody").append(`
+                <div class='row' style='padding-top:10px'>
+                    <div class='col-xs-12'>
+                        <button id='${self.container}_confirm_save_ds' class='btn btn-default' disabled style='float:right'>
+                        there is no time series to create a dataset</button>
                     </div>
                 </div>
             `);
         }
+
         $("#" + self.container + "_confirm_save_ds")
             .on("click", function () {
-                self.sendDsToApi();
+                self.sendDsToApi(tslist);
             });
         $("#" + self.container + "_algoConfirmSaveDs").modal("show");
     }
 
-    sendDsToApi(){
+    sendDsToApi(tslist){
         const self = this;
         const name = $("#"+self.container + "_dataset_name").val();
         const desc = $("#"+self.container + "_description").val();
-        let tslist = self.data.filter(function(ts,i){ return self.d3.visibleCurves[i];}).map(item => item.tsuid);
+
 
         // null or empty field check
         if (name == "" || name == null) {
@@ -1585,7 +1599,11 @@ class D3Curve extends VizTool {
                 $("#" + self.container + "_algoConfirmSaveDs").modal("hide");
             },
             error: function (results) {
-                notify().error(results.data, "Error");
+                if (results.debug.status == 409) {
+                    notify().error("there already is a dataset called "+name+" in the database. please choose another name", "Error");
+                }else {
+                    notify().error(results.debug.responseText, "Error");
+                }
             },
             complete: function () {
                 $("#" + self.container + "_algoConfirmSaveDS").modal("hide");
