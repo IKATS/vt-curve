@@ -1491,14 +1491,6 @@ class D3Curve extends VizTool {
     buildDsModal() {
         const self = this;
         $("#" + self.container + "_algoConfirmSaveDs").remove();
-        //Review#707: "wfLoadModalTitle" bad id name (2x) - ok
-        //Review#707: no space before ":" - ok
-        //Review#707: The modal doesn't hide after save - ~ok ?
-        //Review#707: Bad button title "save *area*" - ok
-        //Review#707: You shall not propose save new DS when no TS is selected - ok
-        //Review#707: You shall handle DS with no name correctly (don't try to create DS with name "") - ~ok
-        //Review#707: You shall handle DS with no name correctly (don't try to create DS with name "") - ~ok
-        //Review#707: Before submitting for review, check commented code (remove) - ok
         $("#body").append(
             `<div class='modal fade' id='${self.container}_algoConfirmSaveDs' tabindex='-1' role='dialog' aria-labelledby='Dataset_creator'>
                 <div class='modal-dialog' role='document'>
@@ -1599,6 +1591,7 @@ class D3Curve extends VizTool {
                 $("#" + self.container + "_algoConfirmSaveDs").modal("hide");
             },
             error: function (results) {
+                //conflict case
                 if (results.debug.status == 409) {
                     notify().error("there already is a dataset called "+name+" in the database. please choose another name", "Error");
                 }else {
