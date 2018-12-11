@@ -226,7 +226,7 @@ class D3Curve extends VizTool {
             d3.select("#" + this.container)
                 .append("button")
                 .attr("class", "btn btn-default")
-                .text("Save visible area as a new TS")
+                .text("Save visible time series as a new TS")
                 .on("click", function () {
                     self.buildModal();
                 });
@@ -1435,7 +1435,7 @@ class D3Curve extends VizTool {
                         <div class='modal-body'>
                             <div class='row'>
                                 <div class='col-xs-12'>
-                                    <label>Confirm creation of a new timeseries with: </label>
+                                    <label>Confirm creation of a new time series with: </label>
                                 </div>
                             </div>
                             <div class='row' style='padding-top:10px'>
@@ -1491,27 +1491,27 @@ class D3Curve extends VizTool {
     buildDsModal() {
         const self = this;
         $("#" + self.container + "_algoConfirmSaveDs").remove();
-        //Review#707: "wfLoadModalTitle" bad id name (2x)
-        //Review#707: no space before ":"
-        //Review#707: The modal doesn't hide after save
-        //Review#707: Bad button title "save *area*"
+        //Review#707: "wfLoadModalTitle" bad id name (2x) - ok
+        //Review#707: no space before ":" - ok
+        //Review#707: The modal doesn't hide after save - ~ok ?
+        //Review#707: Bad button title "save *area*" - ok
         //Review#707: You shall not propose save new DS when no TS is selected
-        //Review#707: You shall handle DS with no name correctly (don't try to create DS with name "")
-        //Review#707: Before submitting for review, check commented code (remove)
+        //Review#707: You shall handle DS with no name correctly (don't try to create DS with name "") - ~ok
+        //Review#707: Before submitting for review, check commented code (remove) - ok
         $("#body").append(
-            `<div class='modal fade' id='${self.container}_algoConfirmSaveDs' tabindex='-1' role='dialog' aria-labelledby='wfLoadModalTitle'>
+            `<div class='modal fade' id='${self.container}_algoConfirmSaveDs' tabindex='-1' role='dialog' aria-labelledby='Dataset_creator'>
                 <div class='modal-dialog' role='document'>
                     <div class='modal-content'>
-                        <div class='modal-header'>
+                        <div class='modal-header' id="modalDsBody">
                             <button type='button' class='close' data-dismiss='modal' aria-label='Close'>
                                 <span aria-hidden='true'>&times;</span>
                             </button>
-                            <h4 class='modal-title' id='wfLoadModalTitle'>Assisted Dataset creation</h4>
+                            <h4 class='modal-title' id='Dataset_creator'>Assisted Dataset creation</h4>
                         </div>
                         <div class='modal-body'>
                             <div class='row'>
                                 <div class='col-xs-12'>
-                                    <label>Confirm creation of a new Dataset with:</label>
+                                    <label>Confirm creation of a new Dataset with :</label>
                                 </div>
                             </div>
                             <div class='row' style='padding-top:10px'>
@@ -1534,16 +1534,21 @@ class D3Curve extends VizTool {
                                     value='Desc'> </input>
                                 </div>
                             </div>
-                            <div class='row' style='padding-top:10px'>
-                                <div class='col-xs-12'>
-                                    <a id='${self.container}_confirm_save_ds' class='btn btn-default' style='float:right'>Save as a new DS</a>
-                                </div>
-                            </div>
                         </div>
                     </div>
                 </div>
             </div>
         `);
+
+        if (self.d3.visibleCurves >1 ) {
+            $("#modalDsBody").append(`
+                <div class='row' style='padding-top:10px'>
+                    <div class='col-xs-12'>
+                        <a id='${self.container}_confirm_save_ds' class='btn btn-default' style='float:right'>Save as a new DS</a>
+                    </div>
+                </div>
+            `);
+        }
         $("#" + self.container + "_confirm_save_ds")
             .on("click", function () {
                 self.sendDsToApi();
@@ -1557,6 +1562,18 @@ class D3Curve extends VizTool {
         const desc = $("#"+self.container + "_description").val();
         let tslist = self.data.filter(function(ts,i){ return self.d3.visibleCurves[i];}).map(item => item.tsuid);
 
+        // null or empty field check
+        if (name == "" || name == null) {
+            notify().error("the name field can  not be empty", "Error");
+            $("#" + self.container + "_algoConfirmSaveDs").modal("hide");
+            return;
+        }
+        if (tslist.length === 0) {
+            notify().error("you need at least one time-serie to create a dataset", "Error");
+            $("#" + self.container + "_algoConfirmSaveDs").modal("hide");
+            return;
+        }
+
         // Calling the API to create the Dataset
         ikats.api.ds.create({
             async: true,
@@ -1565,6 +1582,7 @@ class D3Curve extends VizTool {
             ts_list: tslist,
             success: function (results){
                 notify().success(results.data, "Success");
+                $("#" + self.container + "_algoConfirmSaveDs").modal("hide");
             },
             error: function (results) {
                 notify().error(results.data, "Error");
