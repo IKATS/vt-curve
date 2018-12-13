@@ -223,7 +223,7 @@ class D3Curve extends VizTool {
 
         if (self.data.length === 1) {
             // Add a button to cut the TS
-            d3.select("#" + this.container)
+            d3.select("#" + self.container)
                 .append("button")
                 .attr("class", "btn btn-default")
                 .text("Save visible area as a new TS")
@@ -231,6 +231,15 @@ class D3Curve extends VizTool {
                     self.buildModal();
                 });
         }
+        // Add a button to save the dataset
+        d3.select("#" + self.container)
+            .append("button")
+            .attr("id","btnSaveNewDS")
+            .attr("class", "btn btn-default")
+            .text("Save visible TS as a new Dataset")
+            .on("click", function () {
+                self.buildDsModal();
+            });
 
         // Initialize D3 components
         // Scales
@@ -776,6 +785,13 @@ class D3Curve extends VizTool {
                     .attr("stroke", "none");
             }
         });
+
+        if (self.data.filter((ts, i) => self.d3.visibleCurves[i]).map(item => item.tsuid).length > 0) {
+            $("#btnSaveNewDS").show();
+        }
+        else {
+            $("#btnSaveNewDS").hide();
+        }
 
         if (self.flags) {
             self.d3.o.flags.forEach(function (flag, index) {
@@ -1426,7 +1442,7 @@ class D3Curve extends VizTool {
                         <div class='modal-body'>
                             <div class='row'>
                                 <div class='col-xs-12'>
-                                    <label> Confirm creation of a new time series with : </label>
+                                    <label>Confirm creation of a new time series with: </label>
                                 </div>
                             </div>
                             <div class='row' style='padding-top:10px'>
@@ -1461,7 +1477,7 @@ class D3Curve extends VizTool {
                             </div>
                             <div class='row' style='padding-top:10px'>
                                 <div class='col-xs-12'>
-                                    <a id='${self.container}_confirm_save_cut' class='btn btn-default' style='float:right'>Save as a new TS</a>
+                                    <button id='${self.container}_confirm_save_cut' class='btn btn-default' style='float:right'>Save as a new TS</button>
                                 </div>
                             </div>
                         </div>
@@ -1474,6 +1490,118 @@ class D3Curve extends VizTool {
                 self.operateCut();
             });
         $("#" + self.container + "_algoConfirmCut").modal("show");
+    }
+
+    /**
+     * Build confirmation modal for Dataset creation
+     */
+    buildDsModal() {
+
+        const self = this;
+        const tslist = self.data.filter(function(ts,i){ 
+            return self.d3.visibleCurves[i];
+        }).map(item => item.tsuid);
+
+        if (tslist.length === 0) {
+            notify().error("You might have forgot selecting TS to save in the DS", "oops !");
+            return;
+        }
+
+        $("#" + self.container + "_algoConfirmSaveDs").remove();
+        $("#body").append(
+            `<div class='modal fade' id='${self.container}_algoConfirmSaveDs' tabindex='-1' role='dialog' aria-labelledby='Dataset_creator'>
+                <div class='modal-dialog' role='document'>
+                    <div class='modal-content'>
+                        <div class='modal-header'>
+                            <button type='button' class='close' data-dismiss='modal' aria-label='Close'>
+                                <span aria-hidden='true'>&times;</span>
+                            </button>
+                            <h4 class='modal-title' id='Dataset_creator'>Assisted Dataset creation</h4>
+                        </div>
+                        <div class='modal-body' id="modalDsBody">
+                            <div class='row'>
+                                <div class='col-xs-12'>
+                                    <label>Confirm creation of a new Dataset with:</label>
+                                </div>
+                            </div>
+                            <div class='row' style='padding-top:10px'>
+                                <div class='col-xs-1'></div>
+                                <div class='col-xs-3' style='top:5px;'>
+                                    <label>Name</label>
+                                </div>
+                                <div class='col-xs-8'>
+                                    <input type='text' id='${self.container}_dataset_name' class='form-control' placeholder='...'
+                                           value='my_new_dataset'> </input>
+                                </div>
+                            </div>
+                            <div class='row' style='padding-top:10px'>
+                                <div class='col-xs-1'></div>
+                                <div class='col-xs-3' style='top:5px;'>
+                                   <label>Description</label>
+                                </div>
+                                <div class='col-xs-8'>
+                                    <input type='text' id='${self.container}_description' class='form-control' placeholder='...'
+                                    value='Desc'> </input>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `);
+
+        $("#modalDsBody").append(`
+            <div class='row' style='padding-top:10px'>
+                <div class='col-xs-12'>
+                    <button id='${self.container}_confirm_save_ds' class='btn btn-default' style='float:right'>Save area</button>
+                </div>
+            </div>
+        `);
+        $("#" + self.container + "_confirm_save_ds")
+            .on("click", function () {
+                self.sendDsToApi(tslist);
+            });
+        $("#" + self.container + "_algoConfirmSaveDs").modal("show");
+    }
+
+    sendDsToApi(tslist){
+        const self = this;
+        const name = $("#"+self.container + "_dataset_name").val();
+        const desc = $("#"+self.container + "_description").val();
+
+
+        // Name field check
+        if (name == "" || name == null) {
+            notify().error("A dataset name shall be provided", "Error");
+            return;
+        }
+        if (tslist.length === 0) {
+            notify().error("You need at least one time series to create a dataset", "Error");
+            $("#" + self.container + "_algoConfirmSaveDs").modal("hide");
+            return;
+        }
+
+        // Calling the API to create the Dataset
+        ikats.api.ds.create({
+            async: true,
+            name: name,
+            desc: desc,
+            ts_list: tslist,
+            success: function (results){
+                notify().success(results.data, "Success");
+                },
+            error: function (results) {
+                // Conflict case
+                if (results.xhr.status == 409) {
+                    notify().error("There is already a dataset called "+name+" in the database. please choose another name", "Error");
+                }else {
+                    notify().error(results.xhr.responseText, "Error");
+                }
+            },
+            complete: function () {
+                $("#" + self.container + "_algoConfirmSaveDs").modal("hide");
+            }
+        });
     }
 
     /**
