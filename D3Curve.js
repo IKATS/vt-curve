@@ -223,7 +223,7 @@ class D3Curve extends VizTool {
 
         if (self.data.length === 1) {
             // Add a button to cut the TS
-            d3.select("#" + this.container)
+            d3.select("#" + self.container)
                 .append("button")
                 .attr("class", "btn btn-default")
                 .text("Save visible area as a new TS")
@@ -232,8 +232,9 @@ class D3Curve extends VizTool {
                 });
         }
         // Add a button to save the dataset
-        d3.select("#" + this.container)
+        d3.select("#" + self.container)
             .append("button")
+            .attr("id","btnSaveNewDS")
             .attr("class", "btn btn-default")
             .text("Save visible TS as a new Dataset")
             .on("click", function () {
@@ -784,6 +785,13 @@ class D3Curve extends VizTool {
                     .attr("stroke", "none");
             }
         });
+
+        if (self.data.filter((ts, i) => self.d3.visibleCurves[i]).map(item => item.tsuid).length > 0) {
+            $("#btnSaveNewDS").show();
+        }
+        else {
+            $("#btnSaveNewDS").hide();
+        }
 
         if (self.flags) {
             self.d3.o.flags.forEach(function (flag, index) {
@@ -1490,9 +1498,11 @@ class D3Curve extends VizTool {
     buildDsModal() {
 
         const self = this;
-        const tslist = self.data.filter(function(ts,i){ return self.d3.visibleCurves[i];}).map(item => item.tsuid);
+        const tslist = self.data.filter(function(ts,i){ 
+            return self.d3.visibleCurves[i];
+        }).map(item => item.tsuid);
 
-        if (tslist.length == 0) {
+        if (tslist.length === 0) {
             notify().error("You might have forgot selecting TS to save in the DS", "oops !");
             return;
         }
@@ -1539,16 +1549,14 @@ class D3Curve extends VizTool {
                 </div>
             </div>
         `);
-        // no TS selected
-        if (tslist.length > 0) {
-            $("#modalDsBody").append(`
-                <div class='row' style='padding-top:10px'>
-                    <div class='col-xs-12'>
-                        <button id='${self.container}_confirm_save_ds' class='btn btn-default' style='float:right'>Save area</button>
-                    </div>
+
+        $("#modalDsBody").append(`
+            <div class='row' style='padding-top:10px'>
+                <div class='col-xs-12'>
+                    <button id='${self.container}_confirm_save_ds' class='btn btn-default' style='float:right'>Save area</button>
                 </div>
-            `);
-        }
+            </div>
+        `);
         $("#" + self.container + "_confirm_save_ds")
             .on("click", function () {
                 self.sendDsToApi(tslist);
@@ -1562,13 +1570,13 @@ class D3Curve extends VizTool {
         const desc = $("#"+self.container + "_description").val();
 
 
-        // null or empty field check
+        // Name field check
         if (name == "" || name == null) {
             notify().error("A dataset name shall be provided", "Error");
             return;
         }
         if (tslist.length === 0) {
-            notify().error("You need at least one time-serie to create a dataset", "Error");
+            notify().error("You need at least one time series to create a dataset", "Error");
             $("#" + self.container + "_algoConfirmSaveDs").modal("hide");
             return;
         }
@@ -1585,7 +1593,7 @@ class D3Curve extends VizTool {
             error: function (results) {
                 // Conflict case
                 if (results.xhr.status == 409) {
-                    notify().error("There already is a dataset called "+name+" in the database. please choose another name", "Error");
+                    notify().error("There is already a dataset called "+name+" in the database. please choose another name", "Error");
                 }else {
                     notify().error(results.xhr.responseText, "Error");
                 }
