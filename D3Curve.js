@@ -236,7 +236,7 @@ class D3Curve extends VizTool {
             .append("button")
             .attr("id","btnSaveNewDS")
             .attr("class", "btn btn-default")
-            .text("Save visible TS as a new Dataset")
+            .text("Save visible TS as a new dataset")
             .on("click", function () {
                 self.buildDsModal();
             });
@@ -1437,7 +1437,7 @@ class D3Curve extends VizTool {
                             <button type='button' class='close' data-dismiss='modal' aria-label='Close'>
                                 <span aria-hidden='true'>&times;</span>
                             </button>
-                            <h4 class='modal-title' id='wfLoadModalTitle'>Assisted TS cut</h4>
+                            <h4 class='modal-title' id='wfLoadModalTitle'>Assistant for TS cut</h4>
                         </div>
                         <div class='modal-body'>
                             <div class='row'>
@@ -1516,7 +1516,7 @@ class D3Curve extends VizTool {
                             <button type='button' class='close' data-dismiss='modal' aria-label='Close'>
                                 <span aria-hidden='true'>&times;</span>
                             </button>
-                            <h4 class='modal-title' id='Dataset_creator'>Assisted Dataset creation</h4>
+                            <h4 class='modal-title' id='Dataset_creator'>Assistant for dataset definition</h4>
                         </div>
                         <div class='modal-body' id="modalDsBody">
                             <div class='row'>
@@ -1553,7 +1553,7 @@ class D3Curve extends VizTool {
         $("#modalDsBody").append(`
             <div class='row' style='padding-top:10px'>
                 <div class='col-xs-12'>
-                    <button id='${self.container}_confirm_save_ds' class='btn btn-default' style='float:right'>Save area</button>
+                    <button id='${self.container}_confirm_save_ds' class='btn btn-default' style='float:right'>Save</button>
                 </div>
             </div>
         `);
@@ -1588,12 +1588,12 @@ class D3Curve extends VizTool {
             desc: desc,
             ts_list: tslist,
             success: function (results){
-                notify().success(results.data, "Success");
+                notify().success(`Dataset ${name} created`, "Success");
                 },
             error: function (results) {
                 // Conflict case
                 if (results.xhr.status == 409) {
-                    notify().error("There is already a dataset called "+name+" in the database. please choose another name", "Error");
+                    notify().error("There is already a dataset called "+name+" in the database. Please choose another name", "Error");
                 }else {
                     notify().error(results.xhr.responseText, "Error");
                 }
